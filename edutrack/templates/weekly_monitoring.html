@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 Weekly Monitoring</h2>
+<p class="muted" style="margin-bottom: 24px;">
+  Track your weekly progress, study habits, and performance trends over time.
+</p>
+
+{% if current_week %}
+<div class="grid-3" style="margin-bottom: 32px;">
+  <div class="stat">
+    <h3>{{ current_week.resources_completed }}</h3>
+    <p>📚 Resources This Week</p>
+    {% if trends.resources > 0 %}
+      <small style="color: var(--success);">↑ +{{ trends.resources }}</small>
+    {% elif trends.resources < 0 %}
+      <small style="color: var(--danger);">↓ {{ trends.resources }}</small>
+    {% else %}
+      <small class="muted">→ No change</small>
+    {% endif %}
+  </div>
+  <div class="stat">
+    <h3>{{ current_week.quizzes_attempted }}</h3>
+    <p>🧠 Quizzes This Week</p>
+    {% if trends.quizzes > 0 %}
+      <small style="color: var(--success);">↑ +{{ trends.quizzes }}</small>
+    {% elif trends.quizzes < 0 %}
+      <small style="color: var(--danger);">↓ {{ trends.quizzes }}</small>
+    {% else %}
+      <small class="muted">→ No change</small>
+    {% endif %}
+  </div>
+  <div class="stat">
+    <h3>{{ "%.1f"|format(current_week.get_accuracy()) }}%</h3>
+    <p>🎯 Quiz Accuracy</p>
+    {% if trends.accuracy > 0 %}
+      <small style="color: var(--success);">↑ +{{ "%.1f"|format(trends.accuracy) }}%</small>
+    {% elif trends.accuracy < 0 %}
+      <small style="color: var(--danger);">↓ {{ "%.1f"|format(trends.accuracy) }}%</small>
+    {% else %}
+      <small class="muted">→ No change</small>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 24px;">
+  <h3>⏱️ Study Hours This Week</h3>
+  <div style="text-align: center; padding: 20px;">
+    <h2 style="font-size: 3rem; margin: 0; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+      {{ "%.1f"|format(current_week.study_hours) }}
+    </h2>
+    <p class="muted">hours</p>
+    {% if trends.study_hours > 0 %}
+      <small style="color: var(--success);">↑ +{{ "%.1f"|format(trends.study_hours) }} hours vs last week</small>
+    {% elif trends.study_hours < 0 %}
+      <small style="color: var(--danger);">↓ {{ "%.1f"|format(trends.study_hours) }} hours vs last week</small>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>📈 Last 4 Weeks Comparison</h3>
+  <div style="overflow-x: auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Start Date</th>
+          <th>Resources</th>
+          <th>Quizzes</th>
+          <th>Accuracy</th>
+          <th>Study Hours</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for week in weeks_data %}
+        <tr>
+          <td><strong>{{ week.week }}</strong></td>
+          <td>{{ week.week_start }}</td>
+          <td>{{ week.resources }}</td>
+          <td>{{ week.quizzes }}</td>
+          <td>
+            {% if week.accuracy > 0 %}
+              <span style="color: var(--success);">{{ week.accuracy }}%</span>
+            {% else %}
+              <span class="muted">0%</span>
+            {% endif %}
+          </td>
+          <td>{{ week.study_hours }}h</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 24px;">
+  <h3>📊 Progress Chart</h3>
+  <canvas id="weeklyChart" style="max-height: 400px;"></canvas>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const ctx = document.getElementById('weeklyChart');
+  const weeksData = {{ weeks_data|tojson }};
+  
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: weeksData.map(w => w.week),
+      datasets: [
+        {
+          label: 'Resources Completed',
+          data: weeksData.map(w => w.resources),
+          borderColor: 'rgba(99, 102, 241, 1)',
+          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'Quizzes Attempted',
+          data: weeksData.map(w => w.quizzes),
+          borderColor: 'rgba(139, 92, 246, 1)',
+          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'Study Hours',
+          data: weeksData.map(w => w.study_hours),
+          borderColor: 'rgba(16, 185, 129, 1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          tension: 0.4,
+          fill: true,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            color: 'rgba(139, 146, 184, 0.9)'
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: 'rgba(139, 146, 184, 0.8)'
+          },
+          grid: {
+            color: 'rgba(99, 102, 241, 0.1)'
+          }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          ticks: {
+            color: 'rgba(139, 146, 184, 0.8)'
+          },
+          grid: {
+            drawOnChartArea: false
+          }
+        },
+        x: {
+          ticks: {
+            color: 'rgba(139, 146, 184, 0.8)'
+          },
+          grid: {
+            color: 'rgba(99, 102, 241, 0.1)'
+          }
+        }
+      }
+    }
+  });
+});
+</script>
+
+<div class="card" style="margin-top: 24px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+  <h3 style="color: var(--success);">💡 Weekly Goals</h3>
+  <ul style="list-style: none; padding: 0;">
+    <li style="padding: 8px 0;">🎯 Aim for at least 10 resources per week</li>
+    <li style="padding: 8px 0;">📚 Complete 15+ quizzes weekly</li>
+    <li style="padding: 8px 0;">⏱️ Maintain 5+ study hours per week</li>
+    <li style="padding: 8px 0;">🏆 Keep quiz accuracy above 70%</li>
+  </ul>
+</div>
+{% endblock %}
+

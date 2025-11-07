@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero">
+  <h1>Welcome to EduTrack</h1>
+  <p>Your smart platform for learning, progress tracking, and study planning.</p>
+  <div class="cta">
+    <a href="{{ url_for('login') }}" class="btn">Login</a>
+    <a href="{{ url_for('register') }}" class="btn outline">Register</a>
+  </div>
+</div>
+
+<div class="features">
+  <div class="card">
+    <h3>📚 Curated Resources</h3>
+    <p class="muted">Access YouTube videos, notes, and previous year questions filtered by your grade and exam.</p>
+  </div>
+  <div class="card">
+    <h3>🧠 Adaptive Quizzes</h3>
+    <p class="muted">Take quizzes that adjust difficulty based on your performance for optimal learning.</p>
+  </div>
+  <div class="card">
+    <h3>📅 Study Planner</h3>
+    <p class="muted">Generate personalized weekly study plans based on your subjects and exam schedule.</p>
+  </div>
+  <div class="card">
+    <h3>📊 Progress Tracking</h3>
+    <p class="muted">Track your learning journey with detailed analytics and achievement badges.</p>
+  </div>
+</div>
+{% endblock %}

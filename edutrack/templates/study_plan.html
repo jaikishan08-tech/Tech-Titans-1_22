@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📅 Study Plan</h2>
+<div class="card" style="margin-bottom: 32px;">
+  <form method="post" class="form grid">
+    <label>
+      Duration (weeks)
+      <input type="number" name="duration_weeks" value="4" min="1" max="12" placeholder="Number of weeks">
+    </label>
+    <fieldset class="subjects" style="grid-column: 1 / -1;">
+      <legend>Select Subjects</legend>
+      {% for s in all_subjects %}
+        <label class="chip">
+          <input type="checkbox" name="subjects" value="{{ s }}"> 
+          <span>{{ s }}</span>
+        </label>
+      {% endfor %}
+    </fieldset>
+    <div style="grid-column: 1 / -1;">
+      <button class="btn" type="submit">✨ Generate Plan</button>
+    </div>
+  </form>
+</div>
+
+{% if plan %}
+<div class="card">
+  <h3 style="margin-bottom: 20px;">📋 Your Study Schedule</h3>
+  <div style="overflow-x: auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>📅 Date</th>
+          <th>📚 Subject</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for p in plan %}
+        <tr>
+          <td><strong>{{ p.date.strftime('%Y-%m-%d') }}</strong></td>
+          <td>
+            <span style="padding: 4px 12px; background: rgba(99, 102, 241, 0.2); border-radius: 6px; font-weight: 600;">
+              {{ p.subject }}
+            </span>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No active plan yet. Generate one above to get started! 🚀</p>
+</div>
+{% endif %}
+{% endblock %}

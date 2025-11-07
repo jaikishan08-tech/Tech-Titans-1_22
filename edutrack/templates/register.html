@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+  <h2>✨ Create account</h2>
+  <form method="post" class="form grid">
+    <label>
+      Name
+      <input type="text" name="name" required placeholder="Your full name">
+    </label>
+    <label>
+      Email
+      <input type="email" name="email" required placeholder="your@email.com">
+    </label>
+    <label>
+      Password
+      <input type="password" name="password" required placeholder="Create a password">
+    </label>
+    <label>
+      Grade
+      <select name="grade" required>
+        <option value="">Select Grade</option>
+        <option value="10">10th</option>
+        <option value="11">11th</option>
+        <option value="12">12th</option>
+      </select>
+    </label>
+    <label>
+      Target Exam
+      <select name="target_exam">
+        <option value="">(Select)</option>
+        <option value="10th">10th</option>
+        <option value="12th">12th</option>
+        <option value="JEE">JEE</option>
+        <option value="NEET">NEET</option>
+        <option value="KCET">KCET</option>
+      </select>
+    </label>
+    <div style="grid-column: 1 / -1;">
+      <button class="btn" type="submit">Register</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

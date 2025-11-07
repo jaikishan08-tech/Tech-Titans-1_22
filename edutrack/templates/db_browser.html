@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🗄️ Database Browser</h2>
+<p class="muted" style="margin-bottom: 24px;">
+  View and explore your EduTrack database contents online
+</p>
+
+<div class="card" style="margin-bottom: 24px;">
+  <h3>📊 Database Statistics</h3>
+  <div class="grid-3">
+    <div class="stat">
+      <h3>{{ stats.users }}</h3>
+      <p>Users</p>
+    </div>
+    <div class="stat">
+      <h3>{{ stats.resources }}</h3>
+      <p>Resources</p>
+    </div>
+    <div class="stat">
+      <h3>{{ stats.questions }}</h3>
+      <p>Questions</p>
+    </div>
+    <div class="stat">
+      <h3>{{ stats.progress }}</h3>
+      <p>Progress Records</p>
+    </div>
+    <div class="stat">
+      <h3>{{ stats.weekly_stats }}</h3>
+      <p>Weekly Stats</p>
+    </div>
+    <div class="stat">
+      <h3>{{ stats.study_plans }}</h3>
+      <p>Study Plans</p>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Users -->
+  <div class="card">
+    <h3>👥 Users</h3>
+    <div style="max-height: 300px; overflow-y: auto;">
+      {% for user in users %}
+      <div style="padding: 12px; margin: 8px 0; background: rgba(99, 102, 241, 0.1); border-radius: 8px; border-left: 4px solid var(--accent);">
+        <strong>{{ user.name }}</strong>
+        {% if user.is_admin %}<span style="color: var(--warning);">[ADMIN]</span>{% endif %}
+        <p class="muted" style="margin: 4px 0 0 0; font-size: 0.9rem;">
+          {{ user.email }}<br>
+          Grade: {{ user.grade or 'N/A' }} | Exam: {{ user.target_exam or 'N/A' }}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Resources -->
+  <div class="card">
+    <h3>📚 Resources</h3>
+    <div style="max-height: 300px; overflow-y: auto;">
+      {% for resource in resources %}
+      <div style="padding: 12px; margin: 8px 0; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border-left: 4px solid var(--success);">
+        <strong>{{ resource.title }}</strong>
+        <p class="muted" style="margin: 4px 0 0 0; font-size: 0.9rem;">
+          {{ resource.subject }} | {{ resource.resource_type|upper }}<br>
+          Grade: {{ resource.grade or 'N/A' }} | Exam: {{ resource.exam or 'N/A' }} | Difficulty: {{ resource.difficulty }}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 24px;">
+  <!-- Questions -->
+  <div class="card">
+    <h3>❓ Questions</h3>
+    <div style="max-height: 300px; overflow-y: auto;">
+      {% for question in questions %}
+      <div style="padding: 12px; margin: 8px 0; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border-left: 4px solid rgba(139, 92, 246, 1);">
+        <strong>{{ question.subject }} ({{ question.exam }})</strong>
+        <span style="padding: 2px 8px; background: rgba(139, 92, 246, 0.2); border-radius: 4px; font-size: 0.8rem; margin-left: 8px;">
+          {{ question.difficulty|upper }}
+        </span>
+        <p class="muted" style="margin: 4px 0 0 0; font-size: 0.9rem;">
+          Q: {{ question.prompt[:60] }}...<br>
+          A: {{ question.answer }}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Weekly Stats -->
+  <div class="card">
+    <h3>📈 Weekly Statistics</h3>
+    <div style="max-height: 300px; overflow-y: auto;">
+      {% for ws in weekly_stats %}
+      <div style="padding: 12px; margin: 8px 0; background: rgba(99, 102, 241, 0.1); border-radius: 8px; border-left: 4px solid var(--accent);">
+        <strong>Week of {{ ws.week_start }}</strong>
+        <p class="muted" style="margin: 4px 0 0 0; font-size: 0.9rem;">
+          User ID: {{ ws.user_id }}<br>
+          Resources: {{ ws.resources_completed }} | Quizzes: {{ ws.quizzes_attempted }}<br>
+          Accuracy: {{ "%.1f"|format(ws.get_accuracy()) }}% | Study Hours: {{ "%.1f"|format(ws.study_hours) }}
+        </p>
+      </div>
+      {% else %}
+      <p class="muted">No weekly statistics yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 24px;">
+  <h3>📋 Recent Progress Records</h3>
+  <div style="max-height: 300px; overflow-y: auto;">
+    {% for progress in recent_progress %}
+    <div style="padding: 12px; margin: 8px 0; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+      <strong>User {{ progress.user_id }}</strong> - {{ progress.item_type|upper }}
+      {% if progress.extra_score is not none %}
+        <span style="color: {% if progress.extra_score == 1 %}var(--success){% else %}var(--danger){% endif %};">
+          (Score: {{ progress.extra_score }})
+        </span>
+      {% endif %}
+      <p class="muted" style="margin: 4px 0 0 0; font-size: 0.9rem;">
+        Ref ID: {{ progress.ref_id }} | {{ progress.timestamp.strftime('%Y-%m-%d %H:%M') }}
+      </p>
+    </div>
+    {% else %}
+    <p class="muted">No progress records yet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card" style="margin-top: 24px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3);">
+  <h3 style="color: var(--accent);">💡 Database Info</h3>
+  <p class="muted">
+    <strong>Location:</strong> C:\Users\arjun\Downloads\edutrack\edutrack.db<br>
+    <strong>Type:</strong> SQLite Database<br>
+    <strong>Last Updated:</strong> Real-time (updates automatically)
+  </p>
+</div>
+{% endblock %}
+

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⚙️ Admin Panel</h2>
+<div class="grid-2">
+  <div class="card">
+    <h3>➕ Add Resource</h3>
+    <form method="post" class="form" enctype="multipart/form-data">
+      <input type="hidden" name="form_type" value="resource">
+      <label>
+        Title
+        <input name="title" required placeholder="Resource title">
+      </label>
+      <label>
+        Subject
+        <input name="subject" required placeholder="e.g., Math, Physics">
+      </label>
+      <label>
+        Grade
+        <input name="grade" placeholder="10/11/12 or empty">
+      </label>
+      <label>
+        Exam
+        <input name="exam" placeholder="JEE/NEET/KCET/10th/12th">
+      </label>
+      <label>
+        Difficulty
+        <select name="difficulty">
+          <option>easy</option>
+          <option>medium</option>
+          <option>hard</option>
+        </select>
+      </label>
+      <label>
+        Resource Type
+        <select name="resource_type" id="resourceType" onchange="updateResourceForm()">
+          <option value="auto">🔍 Auto-detect</option>
+          <option value="youtube">📺 YouTube</option>
+          <option value="pdf">📄 PDF (Upload File)</option>
+          <option value="pdf_url">📄 PDF (URL Link)</option>
+          <option value="other">🔗 Other Link</option>
+        </select>
+      </label>
+      <div id="urlSection">
+        <label>
+          URL
+          <input name="url" id="urlInput" placeholder="https://youtube.com/watch?v=... or https://example.com/file.pdf">
+          <small class="muted" id="urlHint" style="display: block; margin-top: 4px; font-size: 0.85rem;">
+            Enter YouTube URL, PDF link, or any other resource URL
+          </small>
+        </label>
+      </div>
+      <div id="fileSection" style="display: none;">
+        <label>
+          Upload PDF File
+          <input type="file" name="pdf_file" id="pdfFile" accept=".pdf">
+          <small class="muted" style="display: block; margin-top: 4px; font-size: 0.85rem;">
+            Select a PDF file to upload (max 16MB)
+          </small>
+        </label>
+      </div>
+      <button class="btn" type="submit">✅ Add Resource</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>❓ Add Question</h3>
+    <form method="post" class="form">
+      <input type="hidden" name="form_type" value="question">
+      <label>
+        Subject
+        <input name="subject" required placeholder="e.g., Math, Physics">
+      </label>
+      <label>
+        Exam
+        <input name="exam" required placeholder="JEE/NEET/KCET">
+      </label>
+      <label>
+        Difficulty
+        <select name="difficulty">
+          <option>easy</option>
+          <option>medium</option>
+          <option>hard</option>
+        </select>
+      </label>
+      <label>
+        Prompt
+        <textarea name="prompt" required placeholder="Enter the question..."></textarea>
+      </label>
+      <label>
+        Options (comma separated)
+        <input name="options" required placeholder="Option1, Option2, Option3, Option4">
+      </label>
+      <label>
+        Answer
+        <input name="answer" required placeholder="Correct answer">
+      </label>
+      <button class="btn" type="submit">✅ Add Question</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 32px;">
+  <div class="card">
+    <h3>📚 Recent Resources</h3>
+    {% if resources %}
+    <ul style="list-style: none; padding: 0;">
+      {% for r in resources %}
+      <li style="padding: 12px; margin: 8px 0; background: rgba(99, 102, 241, 0.1); border-radius: 8px; border-left: 4px solid var(--accent);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          {% if r.resource_type == 'youtube' %}
+            <span style="font-size: 1.2rem;">📺</span>
+          {% elif r.resource_type == 'pdf' %}
+            <span style="font-size: 1.2rem;">📄</span>
+          {% else %}
+            <span style="font-size: 1.2rem;">🔗</span>
+          {% endif %}
+          <div style="flex: 1;">
+            <strong>{{ r.title }}</strong>
+            <p class="muted" style="margin: 4px 0 0 0; font-size: 0.9rem;">
+              {{ r.subject }} — {{ r.exam or r.grade }}
+              <span style="padding: 2px 8px; background: rgba(99, 102, 241, 0.2); border-radius: 4px; margin-left: 8px; font-size: 0.8rem;">
+                {{ r.resource_type|upper }}
+              </span>
+            </p>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No resources yet.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>❓ Recent Questions</h3>
+    {% if questions %}
+    <ul style="list-style: none; padding: 0;">
+      {% for q in questions %}
+      <li style="padding: 12px; margin: 8px 0; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border-left: 4px solid rgba(139, 92, 246, 1);">
+        <strong>{{ q.subject }}</strong> ({{ q.exam }} — {{ q.difficulty }})
+        <p class="muted" style="margin: 4px 0 0 0; font-size: 0.9rem;">
+          {{ q.prompt[:50] }}...
+        </p>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No questions yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function updateResourceForm() {
+  const resourceType = document.getElementById('resourceType').value;
+  const urlSection = document.getElementById('urlSection');
+  const fileSection = document.getElementById('fileSection');
+  const urlInput = document.getElementById('urlInput');
+  const urlHint = document.getElementById('urlHint');
+  
+  if (resourceType === 'pdf') {
+    // Show file upload, hide URL
+    urlSection.style.display = 'none';
+    fileSection.style.display = 'block';
+    urlInput.removeAttribute('required');
+    document.getElementById('pdfFile').setAttribute('required', 'required');
+  } else {
+    // Show URL input, hide file upload
+    urlSection.style.display = 'block';
+    fileSection.style.display = 'none';
+    urlInput.setAttribute('required', 'required');
+    document.getElementById('pdfFile').removeAttribute('required');
+    
+    // Update placeholder based on type
+    switch(resourceType) {
+      case 'youtube':
+        urlInput.placeholder = 'https://youtube.com/watch?v=... or https://youtu.be/...';
+        urlHint.textContent = 'Enter YouTube video URL (youtube.com or youtu.be)';
+        break;
+      case 'pdf_url':
+        urlInput.placeholder = 'https://example.com/document.pdf';
+        urlHint.textContent = 'Enter direct PDF file URL (.pdf extension)';
+        break;
+      case 'auto':
+        urlInput.placeholder = 'https://youtube.com/watch?v=... or https://example.com/file.pdf';
+        urlHint.textContent = 'Enter YouTube URL, PDF link, or any other resource URL (will auto-detect)';
+        break;
+      default:
+        urlInput.placeholder = 'https://...';
+        urlHint.textContent = 'Enter any resource URL';
+    }
+  }
+}
+</script>
+{% endblock %}

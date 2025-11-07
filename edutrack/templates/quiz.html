@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🧠 Adaptive Quiz</h2>
+<div style="background: var(--panel); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(99, 102, 241, 0.2);">
+  <p class="muted" style="margin: 0;">
+    <strong>Next difficulty:</strong> 
+    <span style="padding: 4px 12px; background: rgba(99, 102, 241, 0.2); border-radius: 6px; font-weight: 600; color: var(--accent);">
+      {{ target_diff|capitalize }}
+    </span>
+  </p>
+</div>
+
+<form method="get" class="filters">
+  <select name="subject">
+    <option value="">Any Subject</option>
+    {% for s in subjects %}
+    <option value="{{ s }}" {% if request.args.get('subject')==s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn" type="submit">🔄 Switch Subject</button>
+</form>
+
+{% if question %}
+<div class="card" style="margin-top: 24px;">
+  <form method="post" class="form">
+    <div class="prompt">
+      <strong style="color: var(--accent); display: block; margin-bottom: 8px;">Question:</strong>
+      {{ question.prompt }}
+    </div>
+    {% set opts = question.options.split(",") %}
+    {% for o in opts %}
+    <label class="radio">
+      <input type="radio" name="chosen" value="{{ o }}" required> 
+      <span>{{ o }}</span>
+    </label>
+    {% endfor %}
+    <input type="hidden" name="qid" value="{{ question.id }}">
+    <button class="btn" type="submit" style="margin-top: 8px;">✅ Submit Answer</button>
+  </form>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No question available for this setup. Try selecting a different subject.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 Dashboard</h2>
+<div class="grid-3">
+  <div class="stat">
+    <h3>{{ completed_resources }}/{{ total_resources }}</h3>
+    <p>📚 Resources completed</p>
+  </div>
+  <div class="stat">
+    <h3>{{ quiz_attempts }}/{{ total_quizzes }}</h3>
+    <p>🧠 Quizzes attempted</p>
+  </div>
+  <div class="stat">
+    <h3>{{ achievements|length }}</h3>
+    <p>🏆 Achievements</p>
+  </div>
+</div>
+
+<div style="text-align: center; margin: 24px 0;">
+  <a href="{{ url_for('weekly_monitoring') }}" class="btn" style="display: inline-block;">
+    📈 View Weekly Monitoring
+  </a>
+</div>
+
+<div style="background: var(--panel); padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 1px solid rgba(99, 102, 241, 0.2);">
+  <h3 style="margin-bottom: 16px;">Progress Overview</h3>
+  <canvas id="progressChart"></canvas>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const ctx = document.getElementById('progressChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Resources', 'Quizzes', 'Achievements'],
+      datasets: [{
+        label: 'Your Progress',
+        data: [{{ completed_resources }}, {{ quiz_attempts }}, {{ achievements|length }}],
+        backgroundColor: [
+          'rgba(99, 102, 241, 0.8)',
+          'rgba(139, 92, 246, 0.8)',
+          'rgba(16, 185, 129, 0.8)'
+        ],
+        borderColor: [
+          'rgba(99, 102, 241, 1)',
+          'rgba(139, 92, 246, 1)',
+          'rgba(16, 185, 129, 1)'
+        ],
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: 'rgba(139, 146, 184, 0.8)'
+          },
+          grid: {
+            color: 'rgba(99, 102, 241, 0.1)'
+          }
+        },
+        x: {
+          ticks: {
+            color: 'rgba(139, 146, 184, 0.8)'
+          },
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+});
+</script>
+
+{% if achievements %}
+<div class="achievements">
+  <h3>🏆 Your Achievements</h3>
+  <ul>
+    {% for a in achievements %}<li>✨ {{ a }}</li>{% endfor %}
+  </ul>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>Complete more resources and quizzes to unlock achievements!</p>
+</div>
+{% endif %}
+{% endblock %}
